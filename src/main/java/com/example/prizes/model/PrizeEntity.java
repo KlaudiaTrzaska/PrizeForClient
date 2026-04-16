@@ -7,7 +7,7 @@ import lombok.Setter;
 
 @Entity
 @Table(name = "prizes")
-public class Prize {
+public class PrizeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

@@ -1,6 +1,6 @@
 package com.example.prizes.controllers;
 
-import com.example.prizes.model.Prize;
+import com.example.prizes.client.dto.Prize;
 import com.example.prizes.services.PrizeService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;

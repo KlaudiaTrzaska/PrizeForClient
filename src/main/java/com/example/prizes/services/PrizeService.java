@@ -1,7 +1,8 @@
 package com.example.prizes.services;
 
+import com.example.prizes.client.dto.Prize;
 import com.example.prizes.data.PrizeDao;
-import com.example.prizes.model.Prize;
+import com.example.prizes.model.PrizeEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -16,12 +17,12 @@ public class PrizeService {
     }
 
     public void addPrize(String name) {
-        Prize prize = new Prize();
-        prize.setPrizeName(name);
-        prizeDao.save(prize);
+        PrizeEntity prizeEntity = new PrizeEntity();
+        prizeEntity.setPrizeName(name);
+        prizeDao.save(prizeEntity);
     }
 
     public List<Prize> getAllPrizes() {
-        return prizeDao.findAll();
+        return prizeDao.findAll().stream().map(entity -> new Prize(entity.getPrizeName(), entity.getThreshold())).toList();
     }
 }
