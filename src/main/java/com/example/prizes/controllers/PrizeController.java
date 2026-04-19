@@ -1,6 +1,6 @@
 package com.example.prizes.controllers;
 
-import com.example.prizes.model.Prize;
+import com.example.prizes.client.Prize;
 import com.example.prizes.services.PrizeService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +27,10 @@ public class PrizeController {
 
     @GetMapping("/prizes")
     public List<Prize> getPrizes() {
-        return prizeService.getAllPrizes();
+        return prizeService.getAllPrizes()
+                .stream()
+                .map(entity ->
+                        new Prize(entity.getPrizeName(), entity.getThreshold())
+                ).toList();
     }
 }
