@@ -15,9 +15,10 @@ public class PrizeService {
         this.prizeDao = prizeDao;
     }
 
-    public void addPrize(String name) {
+    public void addPrize(String name, int threshold) {
         PrizeEntity prizeEntity = new PrizeEntity();
-        prizeEntity.setPrizeName(name);
+        prizeEntity.setPrizeName(name.toLowerCase());
+        prizeEntity.setThreshold(threshold);
         prizeDao.save(prizeEntity);
     }
 
