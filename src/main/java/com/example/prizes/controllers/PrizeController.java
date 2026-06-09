@@ -9,7 +9,9 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -68,6 +70,27 @@ public class PrizeController {
         return inventoryService.getAmountByName(name)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @DeleteMapping("/prizes/{name}")
+    @Operation(summary = "Delete prize by name", description = "Deletes a prize from the prizes table only when its inventory amount is 0")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Prize deleted successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "400", description = "Prize cannot be deleted because inventory amount is not 0",
+                    content = @Content(mediaType = "application/json", schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "404", description = "Prize not found",
+                    content = @Content(mediaType = "application/json", schema = @Schema(type = "string")))
+    })
+    public ResponseEntity<String> deletePrize(@PathVariable String name) {
+        try {
+            prizeService.deletePrize(name);
+            return ResponseEntity.ok("Prize " + name + " deleted");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
 }
