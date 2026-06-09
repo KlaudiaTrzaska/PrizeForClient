@@ -72,6 +72,26 @@ public class PrizeController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PostMapping("/prizes/{name}/take")
+    @Operation(summary = "Take prize by name", description = "Decreases prize inventory amount by 1 when the prize is available")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Prize amount decreased successfully",
+                    content = @Content(mediaType = "application/json", schema = @Schema(type = "integer"))),
+            @ApiResponse(responseCode = "404", description = "Prize not found",
+                    content = @Content(mediaType = "application/json", schema = @Schema(type = "string"))),
+            @ApiResponse(responseCode = "409", description = "Prize is out of stock",
+                    content = @Content(mediaType = "application/json", schema = @Schema(type = "string")))
+    })
+    public ResponseEntity<?> takePrize(@PathVariable String name) {
+        try {
+            return ResponseEntity.ok(inventoryService.takePrize(name));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
     @DeleteMapping("/prizes/{name}")
     @Operation(summary = "Delete prize by name", description = "Deletes a prize from the prizes table only when its inventory amount is 0")
     @ApiResponses(value = {

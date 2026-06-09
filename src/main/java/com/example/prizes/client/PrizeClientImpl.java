@@ -25,4 +25,19 @@ public class PrizeClientImpl implements PrizeClient{
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<Prize>>() {});
     }
+
+    @Override
+    public int takePrize(String name) {
+        Integer remainingAmount = restClient
+                .post()
+                .uri("/prizes/{name}/take", name)
+                .retrieve()
+                .body(Integer.class);
+
+        if (remainingAmount == null) {
+            throw new IllegalStateException("Prize service did not return remaining amount");
+        }
+
+        return remainingAmount;
+    }
 }

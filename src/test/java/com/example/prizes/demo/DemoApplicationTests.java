@@ -161,5 +161,47 @@ class DemoApplicationTests {
             assertEquals(expectedAmount, amount.get());
             verify(inventoryDao).getAmountByName(daoName);
         }
+
+        @Test
+        void takePrizeDecreasesAmountAndReturnsRemainingAmount() {
+            when(inventoryDao.decreaseAmountByPrizeName("book")).thenReturn(1);
+            when(inventoryDao.getAmountByName("book")).thenReturn(Optional.of(2));
+
+            int remainingAmount = inventoryService.takePrize("Book");
+
+            assertEquals(2, remainingAmount);
+            verify(inventoryDao).decreaseAmountByPrizeName("book");
+            verify(inventoryDao).getAmountByName("book");
+        }
+
+        @Test
+        void takePrizeThrowsWhenPrizeIsOutOfStock() {
+            when(inventoryDao.decreaseAmountByPrizeName("book")).thenReturn(0);
+            when(inventoryDao.getAmountByName("book")).thenReturn(Optional.of(0));
+
+            IllegalStateException exception = assertThrows(
+                    IllegalStateException.class,
+                    () -> inventoryService.takePrize("Book")
+            );
+
+            assertEquals("Prize is out of stock: Book", exception.getMessage());
+            verify(inventoryDao).decreaseAmountByPrizeName("book");
+            verify(inventoryDao).getAmountByName("book");
+        }
+
+        @Test
+        void takePrizeThrowsWhenPrizeIsNotInInventory() {
+            when(inventoryDao.decreaseAmountByPrizeName("book")).thenReturn(0);
+            when(inventoryDao.getAmountByName("book")).thenReturn(Optional.empty());
+
+            IllegalArgumentException exception = assertThrows(
+                    IllegalArgumentException.class,
+                    () -> inventoryService.takePrize("Book")
+            );
+
+            assertEquals("Prize not found in inventory: Book", exception.getMessage());
+            verify(inventoryDao).decreaseAmountByPrizeName("book");
+            verify(inventoryDao).getAmountByName("book");
+        }
     }
 }
