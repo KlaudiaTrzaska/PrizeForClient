@@ -85,13 +85,10 @@ class DemoApplicationTests {
 
     @Test
     void getAllPrizesReturnsDaoValues() {
-        PrizeEntity prize = new PrizeEntity();
-        prize.setPrizeName("book");
-        prize.setThreshold(5);
-        List<PrizeEntity> expectedPrizes = List.of(prize);
-        when(prizeDao.findAll()).thenReturn(expectedPrizes);
+        List<String> expectedPrizes = List.of("book");
+        when(prizeDao.getPrizesByThreshold(100)).thenReturn(expectedPrizes);
 
-        List<PrizeEntity> prizes = prizeService.getAllPrizes();
+        List<String> prizes = prizeService.getAllPrizes(100);
 
         assertEquals(expectedPrizes, prizes);
     }

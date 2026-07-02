@@ -25,8 +25,8 @@ public class PrizeService {
         prizeDao.save(prizeEntity);
     }
 
-    public List<PrizeEntity> getAllPrizes() {
-        return prizeDao.findAll();
+    public List<PrizeEntity> getAllPrizes(int threshold) {
+        return prizeDao.getPrizesByThreshold(threshold);
     }
 
     public void deletePrize(String name) {

@@ -1,6 +1,7 @@
 package com.example.prizes.controllers;
 
 import com.example.prizes.client.Prize;
+import com.example.prizes.model.PrizeEntity;
 import com.example.prizes.services.InventoryService;
 import com.example.prizes.services.PrizeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -51,12 +52,8 @@ public class PrizeController {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved list of prizes",
                     content = @Content(mediaType = "application/json", schema = @Schema(implementation = Prize.class)))
     })
-    public List<Prize> getPrizes() {
-        return prizeService.getAllPrizes()
-                .stream()
-                .map(entity ->
-                        new Prize(entity.getPrizeName(), entity.getThreshold())
-                ).toList();
+    public List<PrizeEntity> getPrizes() {
+        return prizeService.getAllPrizes(4);
     }
 
     @GetMapping("/prizes/{name}/amount")
