@@ -21,5 +21,4 @@ public interface InventoryDao extends JpaRepository<Inventory, String> {
               AND prize_amount > 0
             """, nativeQuery = true)
     int decreaseAmountByPrizeName(@Param("name") String name);
-
 }

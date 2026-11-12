@@ -1,5 +1,8 @@
 package com.example.prizes.demo;
 
+import com.example.prizes.client.Prize;
+import com.example.prizes.client.PrizeClient;
+import com.example.prizes.client.PrizePage;
 import com.example.prizes.data.InventoryDao;
 import com.example.prizes.data.PrizeDao;
 import com.example.prizes.model.PrizeEntity;
@@ -12,11 +15,15 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -85,15 +92,48 @@ class DemoApplicationTests {
 
     @Test
     void getAllPrizesReturnsDaoValues() {
-        PrizeEntity prize = new PrizeEntity();
-        prize.setPrizeName("book");
-        prize.setThreshold(5);
-        List<PrizeEntity> expectedPrizes = List.of(prize);
-        when(prizeDao.findAll()).thenReturn(expectedPrizes);
+        PrizeEntity expectedPrize = new PrizeEntity();
+        expectedPrize.setPrizeName("book");
+        expectedPrize.setThreshold(10);
+        PageRequest pageable = PageRequest.of(0, 20);
+        Page<PrizeEntity> expectedPrizes = new PageImpl<>(List.of(expectedPrize), pageable, 1);
+        when(prizeDao.getPrizesByThreshold(100, pageable)).thenReturn(expectedPrizes);
 
-        List<PrizeEntity> prizes = prizeService.getAllPrizes();
+        Page<PrizeEntity> prizes = prizeService.getAllPrizes(100, pageable);
 
         assertEquals(expectedPrizes, prizes);
+        verify(prizeDao).getPrizesByThreshold(100, pageable);
+    }
+
+    @Test
+    void clientGetPrizesFetchesAllPages() {
+        List<Integer> requestedPages = new ArrayList<>();
+        Prize firstPrize = new Prize("book", 10);
+        Prize secondPrize = new Prize("bike", 20);
+        Prize thirdPrize = new Prize("laptop", 30);
+        List<PrizePage> pages = List.of(
+                new PrizePage(List.of(firstPrize), 0, 1000, 3, 3, true, false),
+                new PrizePage(List.of(secondPrize), 1, 1000, 3, 3, false, false),
+                new PrizePage(List.of(thirdPrize), 2, 1000, 3, 3, false, true)
+        );
+        PrizeClient prizeClient = new PrizeClient() {
+            @Override
+            public PrizePage getPrizes(int page, int size) {
+                requestedPages.add(page);
+                assertEquals(PrizeClient.DEFAULT_PAGE_SIZE, size);
+                return pages.get(page);
+            }
+
+            @Override
+            public int takePrize(String name) {
+                return 0;
+            }
+        };
+
+        List<Prize> prizes = prizeClient.getPrizes();
+
+        assertEquals(List.of(firstPrize, secondPrize, thirdPrize), prizes);
+        assertEquals(List.of(0, 1, 2), requestedPages);
     }
 
     @Test

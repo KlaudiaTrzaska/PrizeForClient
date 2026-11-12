@@ -3,9 +3,9 @@ package com.example.prizes.services;
 import com.example.prizes.data.InventoryDao;
 import com.example.prizes.data.PrizeDao;
 import com.example.prizes.model.PrizeEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class PrizeService {
@@ -25,8 +25,8 @@ public class PrizeService {
         prizeDao.save(prizeEntity);
     }
 
-    public List<PrizeEntity> getAllPrizes() {
-        return prizeDao.findAll();
+    public Page<PrizeEntity> getAllPrizes(int threshold, Pageable pageable) {
+        return prizeDao.getPrizesByThreshold(threshold, pageable);
     }
 
     public void deletePrize(String name) {

@@ -1,6 +1,7 @@
 package com.example.prizes.controllers;
 
 import com.example.prizes.client.Prize;
+import com.example.prizes.model.PrizeEntity;
 import com.example.prizes.services.InventoryService;
 import com.example.prizes.services.PrizeService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,17 +10,19 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.List;
 
 @RestController
 @RequestMapping
@@ -46,17 +49,24 @@ public class PrizeController {
     }
 
     @GetMapping("/prizes")
-    @Operation(summary = "Get all prizes", description = "Retrieves a list of all available prizes")
+    @Operation(summary = "Get all prizes", description = "Retrieves a paginated list of all available prizes")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved list of prizes",
-                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = Prize.class)))
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved page of prizes",
+                    content = @Content(mediaType = "application/json", schema = @Schema(implementation = PrizeEntity.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid pagination parameters")
     })
-    public List<Prize> getPrizes() {
-        return prizeService.getAllPrizes()
-                .stream()
-                .map(entity ->
-                        new Prize(entity.getPrizeName(), entity.getThreshold())
-                ).toList();
+    public Page<PrizeEntity> getPrizes(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size
+    ) {
+        if (page < 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Page must be greater than or equal to 0");
+        }
+        if (size < 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Size must be greater than 0");
+        }
+
+        return prizeService.getAllPrizes(4, PageRequest.of(page, size));
     }
 
     @GetMapping("/prizes/{name}/amount")
