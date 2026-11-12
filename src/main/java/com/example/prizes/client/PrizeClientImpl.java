@@ -1,11 +1,8 @@
 package com.example.prizes.client;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-
-import java.util.List;
 
 @Component
 public class PrizeClientImpl implements PrizeClient{
@@ -18,12 +15,22 @@ public class PrizeClientImpl implements PrizeClient{
     }
 
     @Override
-    public List<Prize> getPrizes() {
-        return restClient
+    public PrizePage getPrizes(int page, int size) {
+        PrizePage prizes = restClient
                 .get()
-                .uri("/prizes")
+                .uri(uriBuilder -> uriBuilder
+                        .path("/prizes")
+                        .queryParam("page", page)
+                        .queryParam("size", size)
+                        .build())
                 .retrieve()
-                .body(new ParameterizedTypeReference<List<Prize>>() {});
+                .body(PrizePage.class);
+
+        if (prizes == null) {
+            throw new IllegalStateException("Prize service did not return prizes");
+        }
+
+        return prizes;
     }
 
     @Override
